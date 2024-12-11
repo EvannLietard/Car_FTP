@@ -20,7 +20,8 @@ public class Server {
                 Scanner scan = new Scanner(in);
             boolean isAuthenticated = false;
             String receivedLogin=null;
-            while (true) {
+            boolean run=true;
+            while (run) {
                 String command = scan.nextLine();
                 System.out.println("Reçu: " + command);
                 if (!isAuthenticated) {
@@ -40,7 +41,9 @@ public class Server {
                     }
                 } else {
                     if (command.equalsIgnoreCase("QUIT")) {
-                        break;
+                        s2.close();
+                        serv.close();
+                        run=false;
                     } else {
                         out.write("502 Command not implemented\r\n".getBytes());
                     }
