@@ -43,8 +43,9 @@ public class Server {
                         serv.close();
                         run=false;
                     } else if (command.equalsIgnoreCase("EPSV")) {
-                        dataServer = new ServerSocket(2025);
-                        commandOut.write("229 Entering Extended Passive Mode (|||2025|)\r\n".getBytes());
+                        dataServer = new ServerSocket(0);
+                        String response= String.format("229 Entering Extended Passive Mode (|||%d|)\r\n",dataServer.getLocalPort());
+                        commandOut.write(response.getBytes());
                     } else if (command.startsWith("RETR ")) {
                         String filePath = "ressources/users/" + LOGIN + "/" + command.substring(5).trim();
                         System.out.println(filePath);
@@ -65,6 +66,9 @@ public class Server {
                             dataServer.close();
                             commandOut.write("226 Closing data connection. File transfer successful.\r\n".getBytes());
                             }
+                        else {
+                            commandOut.write("550 File not found or access denied.\r\n".getBytes());
+                        }
                     } else {
                         commandOut.write("502 Command not implemented\r\n".getBytes());
                     }
