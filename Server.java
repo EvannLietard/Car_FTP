@@ -69,7 +69,40 @@ public class Server {
                         else {
                             commandOut.write("550 File not found or access denied.\r\n".getBytes());
                         }
-                    } else {
+                    } else if (command.startsWith("LIST")) {
+                        String directoryPath = "ressources/users/" + LOGIN;
+                        if (command.length() > 5) {
+                            directoryPath += "/"+command.substring(5).trim();
+                            System.out.println("New directory path: " + directoryPath);
+                        }
+                        File directory = new File(directoryPath);
+                        if (directory.exists() && directory.isDirectory()) {
+                            commandOut.write("150 Here comes the directory listing.\r\n".getBytes());
+                            Socket dataSocket = dataServer.accept();
+                            OutputStream dataOut = dataSocket.getOutputStream();
+
+                            File[] files = directory.listFiles();
+                            if (files != null) {
+                                for (File file : files) {
+                                    String type = file.isDirectory() ? "<DIR>" : "-";
+                                    long size = file.length();
+                                    String lastModified = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                            .format(new java.util.Date(file.lastModified()));
+                                    String permissions = (file.canRead() ? "r" : "-") + (file.canWrite() ? "w" : "-") + (file.canExecute() ? "x" : "-");
+                                    String line = String.format("%s %s %-10d %s %s\r\n", permissions, type, size, lastModified, file.getName());
+                                    dataOut.write(line.getBytes());
+                                }
+
+                            }
+                            dataOut.close();
+                            dataSocket.close();
+                            dataServer.close();
+                            commandOut.write("226 Directory send okay.\r\n".getBytes());
+                        } else {
+                            commandOut.write("550 Directory not found or access denied.\r\n".getBytes());
+                        }
+                    }
+                    else {
                         commandOut.write("502 Command not implemented\r\n".getBytes());
                     }
                 }
